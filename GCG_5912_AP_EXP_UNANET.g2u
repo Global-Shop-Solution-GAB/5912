@@ -1,0 +1,478 @@
+Program.Sub.ScreenSU.Start
+Gui.fmMX..Create(BaseForm)
+Gui.fmMX..Caption("Unanet Mapping Maintenance")
+Gui.fmMX..Size(14415,8805)
+Gui.fmMX..MinX(0)
+Gui.fmMX..MinY(0)
+Gui.fmMX..Position(0,0)
+Gui.fmMX..AlwaysOnTop(False)
+Gui.fmMX..FontName("Tahoma")
+Gui.fmMX..FontSize(8.25)
+Gui.fmMX..ControlBox(True)
+Gui.fmMX..MaxButton(True)
+Gui.fmMX..MinButton(True)
+Gui.fmMX..MousePointer(0)
+Gui.fmMX..Moveable(True)
+Gui.fmMX..Sizeable(True)
+Gui.fmMX..ShowInTaskBar(True)
+Gui.fmMX..TitleBar(True)
+Gui.fmMX..Event(UnLoad,fmMX_UnLoad)
+Gui.fmMX.GsGdTERMS.Create(GsGridControl)
+Gui.fmMX.GsGdTERMS.Enabled(True)
+Gui.fmMX.GsGdTERMS.Visible(True)
+Gui.fmMX.GsGdTERMS.Zorder(0)
+Gui.fmMX.GsGdTERMS.Size(5085,7695)
+Gui.fmMX.GsGdTERMS.Position(210,540)
+Gui.fmMX.GsGdTERMS.Event(CellValueChanged,GsGdTERMS_CellValueChanged)
+Gui.fmMX.GsGdEXP_TYPES.Create(GsGridControl)
+Gui.fmMX.GsGdEXP_TYPES.Enabled(True)
+Gui.fmMX.GsGdEXP_TYPES.Visible(True)
+Gui.fmMX.GsGdEXP_TYPES.Zorder(0)
+Gui.fmMX.GsGdEXP_TYPES.Size(8925,7140)
+Gui.fmMX.GsGdEXP_TYPES.Position(5370,1095)
+Gui.fmMX.GsGdEXP_TYPES.Event(RowCellClick,GsGdEXP_TYPES_RowCellClick)
+Gui.fmMX.lblTERMS.Create(Label,"TERMS",True,855,285,0,2340,180,True,0,"Tahoma",12,,0,0)
+Gui.fmMX.lblTERMS.BorderStyle(0)
+Gui.fmMX.lblTERMS.FontStyle(True,False,False,False,False)
+Gui.fmMX.lblEXP.Create(Label,"EXPENSE TYPES",True,1980,285,0,8850,180,True,0,"Tahoma",12,,0,0)
+Gui.fmMX.lblEXP.BorderStyle(0)
+Gui.fmMX.lblEXP.FontStyle(True,False,False,False,False)
+Gui.fmMX.txtAcct.Create(TextBox,"",True,1500,300,0,5730,750,True,0,"Tahoma",8.25,,1)
+Gui.fmMX.txtExpType.Create(TextBox,"",True,4365,300,0,7320,750,True,0,"Tahoma",8.25,,1)
+Gui.fmMX.lblAcct.Create(Label,"GL Acct",True,630,195,0,5730,540,True,0,"Tahoma",8.25,,0,0)
+Gui.fmMX.lblAcct.BorderStyle(0)
+Gui.fmMX.lblAcct.FontStyle(True,False,False,False,False)
+Gui.fmMX.lblExpType.Create(Label,"Unanet Expense Type",True,1830,195,0,7320,540,True,0,"Tahoma",8.25,,0,0)
+Gui.fmMX.lblExpType.BorderStyle(0)
+Gui.fmMX.lblExpType.FontStyle(True,False,False,False,False)
+Gui.fmMX.cmdADD.Create(Button)
+Gui.fmMX.cmdADD.Enabled(True)
+Gui.fmMX.cmdADD.Visible(True)
+Gui.fmMX.cmdADD.Zorder(0)
+Gui.fmMX.cmdADD.Size(1125,345)
+Gui.fmMX.cmdADD.Position(11775,720)
+Gui.fmMX.cmdADD.Caption("ADD/UPDTE")
+Gui.fmMX.cmdADD.FontName("Tahoma")
+Gui.fmMX.cmdADD.FontSize(8.25)
+Gui.fmMX.cmdADD.FontStyle(True,False,False,False,False)
+Gui.fmMX.cmdADD.Event(Click,cmdADD_Click)
+Gui.fmMX.cmdDEL.Create(Button)
+Gui.fmMX.cmdDEL.Enabled(True)
+Gui.fmMX.cmdDEL.Visible(True)
+Gui.fmMX.cmdDEL.Zorder(0)
+Gui.fmMX.cmdDEL.Size(1125,345)
+Gui.fmMX.cmdDEL.Position(13035,720)
+Gui.fmMX.cmdDEL.Caption("DEL")
+Gui.fmMX.cmdDEL.FontName("Tahoma")
+Gui.fmMX.cmdDEL.FontSize(8.25)
+Gui.fmMX.cmdDEL.FontStyle(True,False,False,False,False)
+Gui.fmMX.cmdDEL.Event(Click,cmdDEL_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+V.Local.sBatch.Declare
+V.Local.sMSG.Declare
+V.Local.sSQL.Declare
+V.Local.bBchChk.Declare
+V.Local.sRcvr.Declare
+V.Local.sInvc.Declare
+
+'TJS March 2020
+'Customer: Mentis Sciences, Inc.
+'Business Case: The customer manages vendor payments in Unanet and 
+'they want the vendor invoice to be exported to Unanet when the AP 
+'Invoice/Accrual batch is posted in Global Shop. This occurs when 
+'the vendor invoice is being entered against an existing accrual.
+'Program relies on BI Post-process hook 16100 and a switch of "5912" 
+'to be set against a custom menu item for maintenance.
+
+'TJS August 2020
+'Modified certain fields at customer's request.
+
+F.Intrinsic.Control.If(V.Caller.Switches.Trim,=,"5912")
+	F.Intrinsic.Control.CallSub(MX)
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Passed.CALLING-PGM.Trim,<>,"GL0046")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.ElseIf(V.Passed.BIP_RptID.Trim,=,"","OR",V.Passed.BIP_RptID.Trim,<>,"000817")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("select Top 1 RTRIM(BATCH_NUM) as BATCH_NUM from BI_COMB_JE_AUDIT where TRMNL = '{0}' and RPTID = '{1}'",V.Passed.BIP_Terminal,V.Passed.BIP_RptId,V.Local.sBatch)
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sBatch,V.Local.sBatch)
+
+'*****************************************************TESTING**********************************************************
+'V.Local.sBatch.Set("P0554")
+'*****************************************************TESTING**********************************************************
+
+F.Intrinsic.Control.If(V.Local.sBatch.Trim,=,"")
+	F.Intrinsic.String.Build("Unanet upload file not created.{0}Please contact Global Shop Support.",V.Ambient.NewLine,V.Local.sMSG)
+	F.Intrinsic.UI.Msgbox(V.Local.sMSG,"Error!")
+	F.ODBC.Connection!conts.Close
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+'Verifying that this is an Invoice/Accrual Batch and not a PO Receipts batch.
+F.Intrinsic.String.Build("Select AP_CODE from V_GL_AP_DETAIL where RTRIM(BATCH) = '{0}'",V.Local.sBatch.Trim,V.Local.sSQL)
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+
+F.Intrinsic.String.IsInString(V.Local.sSQL.Trim,"10",True,V.Local.bBchChk)
+
+'If this is a PO Receipts Batch (as indicated by no AP_Code of "10") then we shutdown.
+F.Intrinsic.Control.If(V.Local.bBchChk,=,False)
+	F.ODBC.Connection!conts.Close
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("Select Distinct RECEIVER from V_GL_AP_DETAIL where RTRIM(BATCH) = '{0}' and RTRIM(RECEIVER) <> 'MULTI'",V.Local.sBatch.Trim,V.Local.sSQL)
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sRcvr)
+
+F.Intrinsic.String.Build("('{0}')",V.Local.sRcvr.Trim,V.Local.sRcvr)
+
+F.Intrinsic.String.Replace(V.Local.sRcvr,"#$#","','",V.Local.sRcvr)
+
+F.ODBC.Connection!conts.Close
+
+F.Intrinsic.Control.CallSub(Data,"BatchNo",V.Local.sBatch.Trim,"RcvrNo",V.Local.sRcvr.Trim)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Data.Start
+F.Intrinsic.Control.Try
+V.Local.sSQL.Declare
+V.Local.sPath.Declare
+V.Local.iCNT.Declare
+V.Local.sInvDict.Declare
+V.Local.sPostDate.Declare
+V.Local.sInvcDate.Declare
+V.Local.sYYYY.Declare
+V.Local.sMM.Declare
+V.Local.sDD.Declare
+V.Local.sInvoice.Declare
+V.Local.fSumInv.Declare
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+
+'Pulling primary data from previous PO Receipts batch during Invoice/Accrual batch run.
+F.Intrinsic.String.Build("Select '~MENTIS' as "*Legal_Entity_Org_Code",' ' as Document_Number,A.RECEIVER,A.INVOICE_NO as Group_Id, A.POST_DATE as Post_Date, 'V_'+A.VENDOR as Vendor_Org_Code,G.UNANET_TERMS as Payment_Term,' ' as Invoice_Amount,A.INVC_DATE as Invoice_Date,' ' as Due_Date,' ' as Discount_Date, B.DISCOUNT as Discount_Amount,' ' as Require_Separate_Payment, '20.12.11' as AP_Account,'~MENTIS' as AP_Org,'N' as Hold_Payments,' ' as Hold_Reason,A.INVOICE_NO as Invoice_Reference, A.GL_NUMBER as Dtl_Acct,'~MENTIS' as Dtl_Org_Code,' ' as Dtl_Transaction_Date,A.AMOUNT_CMPNY as Dtl_Amount,'C_'+C.CUSTOMER as Dtl_Proj_Org_Code, D.PROJECT as Dtl_Proj_Code, H.UNANET_EXP_TYPE as Dtl_Exp_Type, C.PHASE  as Dtl_Task_Name,'E' as DTL_Line_Type From V_GL_AP_DETAIL A Left Join V_PO_LINES B on B.PURCHASE_ORDER = A.PO_NUM AND Left(B.RECORD_NO,3) = A.PO_LINE Left Join V_JOB_HEADER C on C.JOB = A.WO AND C.SUFFIX = A.WO_SUFFIX Left Join V_PROJECT_XREF D on RTRIM(D.WO) = RTRIM(A.WO) AND RTRIM(D.WO_SUFF) = RTRIM(A.WO_SUFFIX) and RTRIM(D.WO_SEQ) = RTRIM(A.WO_SEQ) Left Join V_PO_HEADER F on F.PURCHASE_ORDER = A.PO_NUM Left Join GCG_5912_UNANET_TERMS G on G.GS_TERMS = F.TERMS Left Join GCG_5912_EXP_TYPES H on RTRIM(H.GL_ACCOUNT) = RTRIM(A.GL_NUMBER) where GL_NUMBER <> '20.12.19' and RTRIM(A.RECEIVER) in {0} and AP_CODE = '9' and RTRIM(A.BATCH) <> '{1}'",V.Args.RcvrNo.Trim,V.Args.BatchNo.Trim,V.Local.sSQL)
+
+F.Data.Datatable.CreateFromSQL("dtBatch","conts",V.Local.sSQL,True)
+
+'Pulling variance data from Invoice/Accrual batch 
+F.Intrinsic.String.Build("Select '~MENTIS' as "*Legal_Entity_Org_Code",' ' as Document_Number,A.RECEIVER,A.INVOICE_NO as Group_Id, A.POST_DATE as Post_Date, 'V_'+A.VENDOR as Vendor_Org_Code,G.UNANET_TERMS as Payment_Term,' ' as Invoice_Amount,A.INVC_DATE as Invoice_Date,' ' as Due_Date,' ' as Discount_Date, B.DISCOUNT as Discount_Amount,' ' as Require_Separate_Payment, '20.12.11' as AP_Account,'~MENTIS' as AP_Org,'N' as Hold_Payments,' ' as Hold_Reason,A.INVOICE_NO as Invoice_Reference, A.GL_NUMBER as Dtl_Acct,'~MENTIS' as Dtl_Org_Code,' ' as Dtl_Transaction_Date,A.AMOUNT_CMPNY as Dtl_Amount,'C_'+C.CUSTOMER as Dtl_Proj_Org_Code, D.PROJECT as Dtl_Proj_Code, H.UNANET_EXP_TYPE as Dtl_Exp_Type, C.PHASE  as Dtl_Task_Name,'E' as DTL_Line_Type From V_GL_AP_DETAIL A Left Join V_PO_LINES B on B.PURCHASE_ORDER = A.PO_NUM AND Left(B.RECORD_NO,3) = A.PO_LINE Left Join V_JOB_HEADER C on C.JOB = A.WO AND C.SUFFIX = A.WO_SUFFIX Left Join V_PROJECT_XREF D on RTRIM(D.WO) = RTRIM(A.WO) AND RTRIM(D.WO_SUFF) = RTRIM(A.WO_SUFFIX) and RTRIM(D.WO_SEQ) = RTRIM(A.WO_SEQ) Left Join V_PO_HEADER F on F.PURCHASE_ORDER = A.PO_NUM Left Join GCG_5912_UNANET_TERMS G on G.GS_TERMS = F.TERMS Left Join GCG_5912_EXP_TYPES H on RTRIM(H.GL_ACCOUNT) = RTRIM(A.GL_NUMBER) where GL_NUMBER <> '20.12.19' and RTRIM(A.RECEIVER) in {0} and AP_CODE = '10' and RTRIM(A.PO_LINE) <> '000'",V.Args.RcvrNo.Trim,V.Local.sSQL)
+
+F.Data.Datatable.CreateFromSQL("dtVariance","conts",V.Local.sSQL,True)
+
+F.Data.DataTable.Merge("dtVariance","dtBatch",True,2)
+
+F.Intrinsic.String.Build("Select '~MENTIS' as "*Legal_Entity_Org_Code",' ' as Document_Number,A.RECEIVER,A.INVOICE_NO as Group_Id, A.POST_DATE as Post_Date, 'V_'+A.VENDOR as Vendor_Org_Code,G.UNANET_TERMS as Payment_Term,' ' as Invoice_Amount,A.INVC_DATE as Invoice_Date,' ' as Due_Date,' ' as Discount_Date, B.DISCOUNT as Discount_Amount,' ' as Require_Separate_Payment, '20.12.11' as AP_Account,'~MENTIS' as AP_Org,'N' as Hold_Payments,' ' as Hold_Reason,A.INVOICE_NO as Invoice_Reference, A.GL_NUMBER as Dtl_Acct,'~MENTIS' as Dtl_Org_Code,' ' as Dtl_Transaction_Date,A.AMOUNT_CMPNY as Dtl_Amount,'C_'+C.CUSTOMER as Dtl_Proj_Org_Code, D.PROJECT as Dtl_Proj_Code, H.UNANET_EXP_TYPE as Dtl_Exp_Type, C.PHASE  as Dtl_Task_Name,'E' as DTL_Line_Type From V_GL_AP_DETAIL A Left Join V_PO_LINES B on B.PURCHASE_ORDER = A.PO_NUM AND Left(B.RECORD_NO,3) = A.PO_LINE Left Join V_JOB_HEADER C on C.JOB = A.WO AND C.SUFFIX = A.WO_SUFFIX Left Join V_PROJECT_XREF D on RTRIM(D.WO) = RTRIM(A.WO) AND RTRIM(D.WO_SUFF) = RTRIM(A.WO_SUFFIX) and RTRIM(D.WO_SEQ) = RTRIM(A.WO_SEQ) Left Join V_PO_HEADER F on F.PURCHASE_ORDER = A.PO_NUM Left Join GCG_5912_UNANET_TERMS G on G.GS_TERMS = F.TERMS Left Join GCG_5912_EXP_TYPES H on RTRIM(H.GL_ACCOUNT) = RTRIM(A.GL_NUMBER) where GL_NUMBER <> '20.12.19' and RTRIM(A.RECEIVER) = 'MULTI' and AP_CODE = '10' and RTRIM(A.BATCH) = '{0}'",V.Args.BatchNo.Trim,V.Local.sSQL)
+
+F.Data.Datatable.CreateFromSQL("dtMultRcvr","conts",V.Local.sSQL,True)
+
+F.Data.DataTable.Merge("dtMultRcvr","dtBatch",True,2)
+
+F.Intrinsic.String.Build("select distinct RECEIVER,INVOICE_NO from V_GL_AP_DETAIL where RTRIM(BATCH) = '{0}'",V.Args.BatchNo.Trim,V.Local.sInvDict)
+
+F.Data.Dictionary.CreateFromSQL("dictInvc","conts",V.Local.sInvDict)
+F.Data.Dictionary.SetDefaultReturn("dictInvc","")
+
+F.Data.DataTable.FillFromDictionary("dtBatch","dictInvc","RECEIVER","Group_Id")
+
+F.Data.Dictionary.Close("dictInvc")
+
+F.Data.DataTable.RemoveColumn("dtBatch","RECEIVER")
+
+F.ODBC.Connection!conts.Close
+
+F.Intrinsic.Control.For(V.Local.iCNT,0,V.DataTable.dtBatch.RowCount--,1)
+	F.Intrinsic.Control.If(V.DataTable.dtBatch(V.Local.iCNT).Dtl_Proj_Org_Code!FieldValTrim,=,"C_")
+		F.Data.Datatable.SetValue("dtBatch",V.Local.iCNT,"Dtl_Proj_Org_Code","")
+	F.Intrinsic.Control.EndIf
+	
+	V.Local.sInvoice.Set(V.DataTable.dtBatch(V.Local.iCNT).Group_Id!FieldValTrim)
+	F.Intrinsic.String.Build("Group_ID = '{0}'",V.Local.sInvoice,V.Local.sInvoice)
+	F.Data.DataTable.Compute("dtBatch","Sum(Dtl_Amount)",V.Local.sInvoice,V.Local.fSumInv)
+	F.Data.DataTable.SetValue("dtBatch",V.Local.iCNT,"Invoice_Amount",V.Local.fSumInv)
+	
+	V.Local.sPostDate.Set(V.DataTable.dtBatch(V.Local.iCNT).Post_Date!FieldValTrim)
+	F.Intrinsic.String.Left(V.Local.sPostDate,4,V.Local.sYYYY)
+	F.Intrinsic.String.Mid(V.Local.sPostDate,5,2,V.Local.sMM)
+	F.Intrinsic.String.Right(V.Local.sPostDate,2,V.Local.sDD)
+	F.Intrinsic.String.Build("{0}-{1}-{2}",V.Local.sYYYY,V.Local.sMM,V.Local.sDD,V.Local.sPostDate)
+	F.Data.DataTable.SetValue("dtBatch",V.Local.iCNT,"Post_Date",V.Local.sPostDate)
+	
+	V.Local.sInvcDate.Set(V.DataTable.dtBatch(V.Local.iCNT).Invoice_Date!FieldValTrim)
+	F.Intrinsic.String.Left(V.Local.sInvcDate,4,V.Local.sYYYY)
+	F.Intrinsic.String.Mid(V.Local.sInvcDate,5,2,V.Local.sMM)
+	F.Intrinsic.String.Right(V.Local.sInvcDate,2,V.Local.sDD)
+	F.Intrinsic.String.Build("{0}-{1}-{2}",V.Local.sYYYY,V.Local.sMM,V.Local.sDD,V.Local.sInvcDate)
+	F.Data.DataTable.SetValue("dtBatch",V.Local.iCNT,"Invoice_Date",V.Local.sInvcDate)
+F.Intrinsic.Control.Next(V.Local.iCNT)
+
+F.Intrinsic.UI.ShowSaveFileDialog("","csv|*.csv",V.Local.sPath)
+
+F.Intrinsic.String.Split(V.Local.sPath,".",V.Local.sPath)
+
+F.Intrinsic.String.Build("{0}.csv",V.Local.sPath(0),V.Local.sPath)
+
+F.Data.Datatable.SaveToCSV("dtBatch",V.Local.sPath.Trim,True)
+
+F.Intrinsic.String.Build("File saved to {0}",V.Local.sPath.Trim,V.Local.sSQL)
+
+F.Intrinsic.UI.Msgbox(V.Local.sSQL,"Success!")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.Data.End
+
+Program.Sub.MX.Start
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.DataTable.dtTERMS.Exists)
+	F.Data.Datatable.Close("dtTERMS")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.DataTable.dtEXP.Exists)
+	F.Data.Datatable.Close("dtEXP")
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+
+F.Data.Datatable.CreateFromSQL("dtTERMS","conts","select RTRIM(A.TERMS_MESSAGE) as GS_TERMS,RTRIM(B.UNANET_TERMS) as UNANET_TERMS from V_AP_TERMS A Left Join GCG_5912_UNANET_TERMS B on A.TERMS_MESSAGE = B.GS_TERMS",True)
+
+F.Data.Datatable.CreateFromSQL("dtEXP","conts","select RTRIM(A.GL_ACCOUNT) as GL_ACCOUNT,RTRIM(B.DESCR) as DESCR,RTRIM(A.UNANET_EXP_TYPE) as UNANET_EXP_TYPE from GCG_5912_EXP_TYPES A Left Join GL_MASTER B on B.GL_ACCOUNT = A.GL_ACCOUNT",True)
+
+F.Intrinsic.Control.If(V.DataTable.dtEXP.RowCount,=,0)
+	F.Data.Datatable.AddRow("dtEXP","GL_ACCOUNT","","DESCR","","UNANET_EXP_TYPE","")
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conts.Close
+
+Gui.fmMX.GsGdEXP_TYPES.AddGridviewFromDatatable("gvEXP","dtEXP")
+Gui.fmMX.GsGdTERMS.AddGridviewFromDatatable("gvTERMS","dtTERMS")
+
+Gui.fmMX.GsGdEXP_TYPES.MainView("gvEXP")
+Gui.fmMX.GsGdTERMS.MainView("gvTERMS")
+
+F.Intrinsic.Control.CallSub(SetIcon)
+F.Intrinsic.Control.CallSub(MX_GV)
+
+Gui.fmMX..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.MX.End
+
+Program.Sub.MX_GV.Start
+F.Intrinsic.Control.Try
+
+Gui.fmMX.GsGdEXP_TYPES.SuspendLayout
+Gui.fmMX.GsGdTERMS.SuspendLayout
+
+'EXP_TYPES
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","HeaderFontBold",True)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","HeaderHAlignment","Center")
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","Caption","GL Acct")
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","AllowEdit",False)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","Readonly",True)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","Width",50)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","AllowFocus",False)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","GL_ACCOUNT","CellBackColor",V.Color.LtGrey)
+
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","HeaderFontBold",True)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","HeaderHAlignment","Center")
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","Caption","Description")
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","AllowEdit",False)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","Readonly",True)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","Width",150)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","AllowFocus",False)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","DESCR","CellBackColor",V.Color.LtGrey)
+
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","UNANET_EXP_TYPE","HeaderFontBold",True)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","UNANET_EXP_TYPE","HeaderHAlignment","Center")
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","UNANET_EXP_TYPE","Caption","Unanet Expense Type")
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","UNANET_EXP_TYPE","AllowEdit",False)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","UNANET_EXP_TYPE","Readonly",True)
+Gui.fmMX.GsGdEXP_TYPES.SetColumnProperty("gvEXP","UNANET_EXP_TYPE","Width",150)
+
+'TERMS
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","HeaderFontBold",True)
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","HeaderHAlignment","Center")
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","Caption","Global Shop Terms")
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","AllowEdit",False)
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","Readonly",True)
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","AllowFocus",False)
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","GS_TERMS","CellBackColor",V.Color.LtGray)
+
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","UNANET_TERMS","HeaderFontBold",True)
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","UNANET_TERMS","HeaderHAlignment","Center")
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","UNANET_TERMS","Caption","Unanet Terms")
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","UNANET_TERMS","AllowEdit",True)
+Gui.fmMX.GsGdTERMS.SetColumnProperty("gvTERMS","UNANET_TERMS","Readonly",False)
+
+Gui.fmMX.GsGdEXP_TYPES.ResumeLayout
+Gui.fmMX.GsGdTERMS.ResumeLayout
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.MX_GV.End
+
+Program.Sub.GsGdTERMS_CellValueChanged.Start
+F.Intrinsic.Control.Try
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+
+F.Data.Datatable.SaveToDB("dtTERMS","conts","GCG_5912_UNANET_TERMS","GS_TERMS",256)
+
+F.ODBC.Connection!conts.Close
+
+F.Intrinsic.Control.CallSub(MX_GV)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.GsGdTERMS_CellValueChanged.End
+
+Program.Sub.GsGdEXP_TYPES_RowCellClick.Start
+F.Intrinsic.Control.Try
+V.Local.sGLAcct.Declare
+V.Local.sUnExpType.Declare
+
+Gui.fmMX.GsGdEXP_TYPES.GetCellValueByColumnName("gvEXP","GL_ACCOUNT",V.Args.ROWINDEX,V.Local.sGLAcct)
+Gui.fmMX.GsGdEXP_TYPES.GetCellValueByColumnName("gvEXP","UNANET_EXP_TYPE",V.Args.ROWINDEX,V.Local.sUnExpType)
+
+Gui.fmMX.txtAcct.Text(V.Local.sGLAcct)
+Gui.fmMX.txtExpType.Text(V.Local.sUnExpType)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.GsGdEXP_TYPES_RowCellClick.End
+
+Program.Sub.cmdADD_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sSQL.Declare
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+
+F.Intrinsic.String.Build("select * from GL_MASTER where RTRIM(GL_ACCOUNT) = '{0}'",V.Screen.fmMX!txtAcct.Text.Trim,V.Local.sSQL)
+
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+
+F.Intrinsic.Control.If(V.Local.sSQL.Trim,=,"")
+	F.Intrinsic.UI.Msgbox("Please enter a valid GL account","GL account does not exist")
+	F.ODBC.Connection!conts.Close
+	Gui.fmMX.txtAcct.Text("")
+	Gui.fmMX.txtExpType.Text("")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("select * from GCG_5912_EXP_TYPES where GL_ACCOUNT = '{0}'",V.Screen.fmMX!txtAcct.Text.Trim,V.Local.sSQL)
+
+F.ODBC.Connection!conts.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+
+F.Intrinsic.Control.If(V.Local.sSQL.Trim,=,"")
+	F.Intrinsic.String.Build("Insert into GCG_5912_EXP_TYPES (GL_ACCOUNT,UNANET_EXP_TYPE) values ('{0}','{1}')",V.Screen.fmMX!txtAcct.Text.Trim,V.Screen.fmMX!txtExpType.Text.Trim,V.Local.sSQL)
+	F.ODBC.Connection!conts.Execute(V.Local.sSQL)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("Update GCG_5912_EXP_TYPES set GL_ACCOUNT = '{0}',UNANET_EXP_TYPE = '{1}' where GL_ACCOUNT = '{0}'",V.Screen.fmMX!txtAcct.Text.Trim,V.Screen.fmMX!txtExpType.Text.Trim,V.Local.sSQL)
+	F.ODBC.Connection!conts.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conts.Close
+
+Gui.fmMX.txtAcct.Text("")
+Gui.fmMX.txtExpType.Text("")
+
+F.Intrinsic.Control.CallSub(MX)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdADD_Click.End
+
+Program.Sub.cmdDEL_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sSQL.Declare
+
+F.ODBC.Connection!conts.OpenCompanyConnection
+
+F.Intrinsic.String.Build("Delete GCG_5912_EXP_TYPES where GL_ACCOUNT = '{0}'",V.Screen.fmMX!txtAcct.Text.Trim,V.Local.sSQL)
+F.ODBC.Connection!conts.Execute(V.Local.sSQL)
+
+F.ODBC.Connection!conts.Close
+
+Gui.fmMX.txtAcct.Text("")
+Gui.fmMX.txtExpType.Text("")
+
+F.Intrinsic.Control.CallSub(MX)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdDEL_Click.End
+
+Program.Sub.SetIcon.Start
+F.Intrinsic.Control.Try
+V.Local.sForm.Declare
+V.Local.bExists.Declare
+V.Local.sIcon.Declare
+V.Local.iCounter.Declare
+
+F.Intrinsic.String.Build("{0}\ART\gss2.ico",V.Caller.GlobalDir,v.Local.sIcon)
+F.Intrinsic.File.Exists(V.Local.sIcon, V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists.Not)
+    F.Intrinsic.String.Build("{0}\GAB\GAS\gss2.ico",V.Caller.PluginsDir,v.Local.sIcon)
+    F.Intrinsic.File.Exists(V.Local.sIcon, V.Local.bExists)
+    F.Intrinsic.Control.If(V.Local.bExists.Not)
+        F.Intrinsic.Control.ExitSub
+    F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.UI.GetFormList(V.Local.sForm)
+F.Intrinsic.String.Split(V.Local.sForm, "*!*", V.Local.sForm)
+
+F.Intrinsic.Control.For(V.Local.iCounter, 0, V.Local.sForm.UBound, 1)
+    Gui.[V.Local.sForm(V.Local.iCounter)]..Icon(V.Local.sIcon)
+F.Intrinsic.Control.Next(V.Local.iCounter)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(Error,"SubRoutine",V.Ambient.CurrentSubroutine,"eNumber",V.Ambient.ErrorNumber,"eDescription",V.Ambient.ErrorDescription)
+F.Intrinsic.Control.EndTry
+Program.Sub.SetIcon.End
+
+Program.Sub.fmMX_UnLoad.Start
+F.Intrinsic.Control.End
+Program.Sub.fmMX_UnLoad.End
+
+Program.Sub.Error.Start
+V.Local.sError.Declare
+V.Local.iRet.Declare
+V.Local.sSep.Declare
+
+F.Intrinsic.String.Build("-------------------------------------------------------------------------------------",,V.Local.sSep)
+F.Intrinsic.String.Build("({5}-{6}){0}{7}{0}Project: {4}{0}{7}{0}Sub: {1}{0}Error: {2}, {3}", V.Ambient.NewLine, V.Args.SubRoutine, V.Args.eNumber, V.Args.eDescription,V.Caller.ScriptFile,V.Ambient.Date, V.Ambient.Time,V.Local.sSep,V.Local.sError)
+F.Intrinsic.UI.Msgbox(V.Local.sError,"Error",V.Local.iRet)
+Program.Sub.Error.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$tsmith$}$20200402150658980$}$xqPbj9atw05FglvzeFsZ9cqXP+qvG6tXgkDzk35I3fMwfNiIf4/vn93O/yw8ADB3LnV/zyBfXfc=
+Program.Sub.Comments.End
